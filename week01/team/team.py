@@ -13,6 +13,7 @@ Instructions:
 
 """
 
+from ast import arg
 from datetime import datetime, timedelta
 import threading
 
@@ -42,6 +43,14 @@ def is_prime(n: int) -> bool:
         i += 6
     return True
 
+def runThread(start_range, end_range):
+    start = 10000000000
+    for i in range(start + int(start_range), start + int(end_range)):
+        if is_prime(i):
+            global prime_count
+            prime_count += 1
+            print(i, end=', ', flush=True)
+    print(flush=True)
 
 if __name__ == '__main__':
     log = Log(show_terminal=True)
@@ -51,13 +60,23 @@ if __name__ == '__main__':
     # TODO 2) move the following for loop into 1 thread
     # TODO 3) change the program to divide the for loop into 10 threads
 
-    start = 10000000000
+    
     range_count = 100000
-    for i in range(start, start + range_count):
-        if is_prime(i):
-            prime_count += 1
-            print(i, end=', ', flush=True)
-    print(flush=True)
+    num_threads = 10
+    range_per_thread = range_count / num_threads
+    threads = []
+
+    for i in range(num_threads):
+        thread_start = range_per_thread * (i)
+        thread_end = range_per_thread * (i+1)
+        t = threading.Thread(target=runThread,args=(thread_start,thread_end))
+        threads.append(t)
+   
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
 
     # Should find 4306 primes
     log.write(f'Numbers processed = {numbers_processed}')
