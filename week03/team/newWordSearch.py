@@ -165,9 +165,22 @@ def main():
     board.display()
 
     start = time.perf_counter()
-    for word in words:
-        if not board.find_word(word):
-            print(f'Error: Could not find "{word}"')
+
+    count = mp.cpu_count()
+
+    pool = mp.Pool(processes=count)
+    outputs = pool.map(board.find_word,words)
+
+    pool.close()
+    pool.join() 
+
+    for i in range(len(outputs)):
+        if outputs[i] != True:
+            print(f'Could not find "{words[i]}"')
+
+    # for word in words:
+    #     if not board.find_word(word):
+    #         print(f'Error: Could not find "{word}"')
     
     total_time = time.perf_counter() - start
 
