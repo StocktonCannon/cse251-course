@@ -31,7 +31,7 @@ CPU_COUNT = mp.cpu_count() + 4
 
 # TODO Your final video need to have 300 processed frames.  However, while you are 
 # testing your code, set this much lower
-FRAME_COUNT = 300
+FRAME_COUNT = 20
 
 RED   = 0
 GREEN = 1
@@ -61,12 +61,6 @@ def create_new_frame(image_file, green_file, process_file):
 
 
 # TODO add any functions to need here
-def startProcessed(index):
-  image_file = rf'week03/assignment/elephant/image{index:03d}.png'
-  green_file = rf'week03/assignment/green/image{index:03d}.png'
-  process_file = rf'week03/assignment/processed/image{index:03d}.png'
-  create_new_frame(image_file, green_file, process_file)
-  
 
 
 
@@ -82,35 +76,19 @@ if __name__ == '__main__':
 
     # TODO Process all frames trying 1 cpu, then 2, then 3, ... to CPU_COUNT
     #      add results to xaxis_cpus and yaxis_times
-    for i in range(CPU_COUNT):
-      start_time = timeit.default_timer()
-      frameList = list(range(1,FRAME_COUNT))
-      pool = mp.Pool(processes=(i+1))
-      xaxis_cpus.append(i+1)
-      outputs = pool.map(startProcessed,frameList)
-      pool.close()
-      pool.join()
-      process_time = timeit.default_timer() - start_time
-      print(f'\nTime To Process all images = {process_time} with {i+1} CPU cores')
-      print('--------')
-      yaxis_times.append(process_time)
 
-  
-      
-    
-    
 
     # sample code: remove before submitting  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     # process one frame #10
-    # image_number = 10
+    image_number = 10
 
-    # image_file = rf'elephant/image{image_number:03d}.png'
-    # green_file = rf'green/image{image_number:03d}.png'
-    # process_file = rf'processed/image{image_number:03d}.png'
+    image_file = rf'elephant/image{image_number:03d}.png'
+    green_file = rf'green/image{image_number:03d}.png'
+    process_file = rf'processed/image{image_number:03d}.png'
 
-    # start_time = timeit.default_timer()
-    # create_new_frame(image_file, green_file, process_file)
-    # print(f'\nTime To Process all images = {timeit.default_timer() - start_time}')
+    start_time = timeit.default_timer()
+    create_new_frame(image_file, green_file, process_file)
+    print(f'\nTime To Process all images = {timeit.default_timer() - start_time}')
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
