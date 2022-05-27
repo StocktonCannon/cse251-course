@@ -1,19 +1,19 @@
 """
-TEAM 7
 Course: CSE 251
 Lesson Week: 05
 File: team.py
-Author: Brother Comeau
+Author: Matthew James and Joshua Capron and now Connor Baltich
 
 Purpose: Check for prime values
 
 Instructions:
 
 - You can't use thread/process pools
-- Follow the graph in I-Learn 
+- Follow the graph in I-Learn
 - Start with PRIME_PROCESS_COUNT = 1, then once it works, increase it
 
 """
+from queue import Queue
 import time
 import threading
 import multiprocessing as mp
@@ -22,13 +22,10 @@ import random
 #Include cse 251 common Python files
 from cse251 import *
 
-PRIME_PROCESS_COUNT = 8
-END_CONDITION = "end"
+PRIME_PROCESS_COUNT = 3
 
-def is_prime(n: int) -> bool:
-    """Primality test using 6k+-1 optimization.
-    From: https://en.wikipedia.org/wiki/Primality_test
-    """
+def is_prime(n: int):
+
     if n <= 3:
         return n > 1
     if n % 2 == 0 or n % 3 == 0:
@@ -41,27 +38,41 @@ def is_prime(n: int) -> bool:
     return True
 
 # TODO create read_thread function
-def read_thread(filename, q):
-    with open(filename,'r') as file:
-        for line in file:
-            q.put(line.strip())
-    for _ in range(PRIME_PROCESS_COUNT):
-        q.put(END_CONDITION)
+def reader_thread(filename, que):
+    with open(filename, 'r') as f:
+        for line in f:
+            que.put(line.strip())
+        for _ in range(PRIME_PROCESS_COUNT):
+            que.put(None)
+
+   
 
 
 # TODO create prime_process function
-def prime_process(primes, q):
+
+def prime_process(prime_que, manager_list):
+    # for _ in range(1, prime_que.qsize()):
+    #     number = int(prime_que.get())
+    #     if is_prime(number):
+    #         print(number)
+    #         manager_list.append(number)
     while True:
-        number = q.get()
-        if number == END_CONDITION:
+        number = prime_que.get()
+       
+        if number == None:
             break
         if is_prime(int(number)):
-            primes.append(number)
+            manager_list.append(number)
+   
+    # return manager_list
+           
 
 def create_data_txt(filename):
     with open(filename, 'w') as f:
         for _ in range(1000):
             f.write(str(random.randint(10000000000, 100000000000000)) + '\n')
+           
+
 
 
 def main():
@@ -76,26 +87,37 @@ def main():
     log.start_timer()
 
     # TODO Create shared data structures
-    q = mp.Queue()
     primes = mp.Manager().list()
+    que = mp.Queue()
+   
 
     # TODO create reading thread
-    reader_thread = threading.Thread(target=read_thread, args=(filename,q))
-
+    read_thread = threading.Thread(target=reader_thread, args=(filename, que))
+   
     # TODO create prime processes
-    processes = [mp.Process(target=prime_process, args=(primes,q)) for i in range(PRIME_PROCESS_COUNT)]
-    # TODO Start them all
-    reader_thread.start()
 
-    for p in processes:
-        p.start()
+
+    processes = [mp.Process(target=prime_process, args=(que, primes)) for i in range(3)]
+
+   
+    # TODO Start them all
+    read_thread.start()
+   
+    for i in range(PRIME_PROCESS_COUNT):
+        processes[i].start()    
 
     # TODO wait for them to complete
-    reader_thread.join()
-    for p in processes:
-        p.join()
-
-
+    read_thread.join()
+    for i in range(PRIME_PROCESS_COUNT):
+        processes[i].join()
+   
+   
+    # for i in range(1, que.qsize()):
+    #     print(que.get())
+       
+   
+   
+       
     log.stop_timer(f'All primes have been found using {PRIME_PROCESS_COUNT} processes')
 
     # display the list of primes
@@ -106,4 +128,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
